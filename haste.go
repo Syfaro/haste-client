@@ -31,6 +31,22 @@ func NewHaste(host string) *Haste {
 	}
 }
 
+// Fetch gets an already existing item from Hastebin
+func (haste *Haste) Fetch(key string) (string, error) {
+	resp, err := http.Get(haste.Host + "/raw/" + key)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
+}
+
 // UploadString uploads a string to Hastebin.
 func (haste *Haste) UploadString(data string) (*Response, error) {
 	return haste.UploadBuffer(bytes.NewBuffer([]byte(data)))
