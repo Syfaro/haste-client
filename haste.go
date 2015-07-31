@@ -1,3 +1,4 @@
+// Package haste is a hastebin client.
 package haste
 
 import (
@@ -7,34 +8,42 @@ import (
 	"net/http"
 )
 
-type HasteResponse struct {
+// Response contains a haste response, which is just a key.
+type Response struct {
 	Key string `json:"key"`
 }
 
-func (resp *HasteResponse) GetLink(haste *Haste) string {
+// GetLink returns a full URL to a hastebin key.
+// This requires the Haste instance to get the host.
+func (resp *Response) GetLink(haste *Haste) string {
 	return haste.Host + "/" + resp.Key
 }
 
+// Haste is a Hastebin client.
 type Haste struct {
 	Host string
 }
 
+// NewHaste creates a new Haste instance with a specified URL basepoint.
 func NewHaste(host string) *Haste {
 	return &Haste{
 		Host: host,
 	}
 }
 
-func (haste *Haste) UploadString(data string) (*HasteResponse, error) {
+// UploadString uploads a string to Hastebin.
+func (haste *Haste) UploadString(data string) (*Response, error) {
 	return haste.UploadBuffer(bytes.NewBuffer([]byte(data)))
 }
 
-func (haste *Haste) UploadBytes(data []byte) (*HasteResponse, error) {
+// UploadBytes uploads bytes to Hastebin.
+func (haste *Haste) UploadBytes(data []byte) (*Response, error) {
 	return haste.UploadBuffer(bytes.NewBuffer(data))
 }
 
-func (haste *Haste) UploadBuffer(data *bytes.Buffer) (*HasteResponse, error) {
-	req, err := http.NewRequest("POST", "http://paste.syfaro.net/documents", data)
+// UploadBuffer uploads a buffer to Hastebin.
+func (haste *Haste) UploadBuffer(data *bytes.Buffer) (*Response, error) {
+	req, err := http.NewRequest("POST", haste.Host+"/documents", data)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +60,7 @@ func (haste *Haste) UploadBuffer(data *bytes.Buffer) (*HasteResponse, error) {
 		return nil, err
 	}
 
-	var apiResp HasteResponse
+	var apiResp Response
 	err = json.Unmarshal(body, &apiResp)
 	if err != nil {
 		return nil, err
